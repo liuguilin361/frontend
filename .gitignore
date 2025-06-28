@@ -2,3 +2,4 @@
 ./bun.lock
 ./deno.lock
 ./.idea
+./package-lock.json
