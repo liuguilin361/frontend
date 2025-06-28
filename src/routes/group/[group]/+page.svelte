@@ -1,0 +1,6 @@
+<script lang="ts">
+    import Navbar from "$lib/components/navbar.svelte";
+    import {page} from "$app/state";
+</script>
+
+<Navbar>{page.url.pathname}</Navbar>

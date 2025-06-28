@@ -1,0 +1,10 @@
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+@plugin "daisyui";
+
+:root {
+    --thing-font-weight-normal: var(--breakpoint-2xl);
+    --thing-line-height-expanded: var(--breakpoint-2xl);
+}

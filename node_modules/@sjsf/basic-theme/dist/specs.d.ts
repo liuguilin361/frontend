@@ -1,0 +1,10 @@
+import { s } from "testing/demo";
+import "./extra-widgets/checkboxes-include.js";
+import "./extra-widgets/date-picker-include.js";
+import "./extra-widgets/file-include.js";
+import "./extra-widgets/multi-select-include.js";
+import "./extra-widgets/radio-include.js";
+import "./extra-widgets/range-include.js";
+import "./extra-widgets/textarea-include.js";
+export declare const specs: s.Specs;
+export declare const extraWidgets: string[];
