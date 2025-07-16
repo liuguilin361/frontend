@@ -1,14 +1,14 @@
 <script lang="ts">
     import Thing from "src/models/thing.svelte.js";
-    import Panel from "src/lib/components/thing/panel.svelte"
+
     let {thing}: { thing: Thing } = $props();
     let loading = $state(false);
 </script>
 
-<Panel setOn={(b)=>thing.setOn(b)} on={thing.on} title={thing.title} group={thing.group? thing.group:undefined}
-       connected={thing.connected} {loading} status={thing.status} deviceType={thing.selectedCapability}>
-    <svg xmlns="http://www.w3.org/2000/svg" height="50px" viewBox="0 0 24 24" width="50px"
-         fill={thing.on? "var(--color-orange-400)":"gray"}>
+<Panel connected={thing.connected} deviceType={thing.selectedCapability} group={thing.group? thing.group:undefined} {loading}
+       on={thing.on} setOn={(b)=>thing.setOn(b)} status={thing.label} title={thing.title}>
+    <svg fill={thing.on? "var(--color-orange-400)":"gray"} height="50px" viewBox="0 0 24 24" width="50px"
+         xmlns="http://www.w3.org/2000/svg">
         <g>
             <path d="M0,0h24v24H0V0z" fill="none"/>
         </g>

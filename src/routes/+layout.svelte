@@ -6,10 +6,8 @@
     import things from "models/things.svelte"
     import Api from "models/api"
     import type {ExtensionResource, GroupDescription} from "models/types"
-    import MenuItems from "components/meun-items.svelte"
-    import MenuIcon from "$lib/components/menu-icon.svelte"
     import App from "../views/app.svelte";
-    import "$lib/thing/thing-card.ts"
+    import "../components/th-card.ts"
 
     let categories = $derived.by(() => {
         let set = new Set<{ capability: string }>();
@@ -62,9 +60,6 @@
         <!-- Navbar -->
         <!-- Page content here -->
         {@render children()}
-        <thing-card>
-            <MenuIcon menu="home"/>
-        </thing-card>
     </div>
     <div class="drawer-side  h-[100vh]  z-5">
 

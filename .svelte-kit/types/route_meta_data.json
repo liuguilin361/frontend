@@ -1,0 +1,13 @@
+{
+	"/": [],
+	"/addon": [],
+	"/addon/[id]": [],
+	"/automation": [],
+	"/category/light": [],
+	"/component": [],
+	"/dashboard": [],
+	"/extensions/[id]": [],
+	"/group/[group]": [],
+	"/new-thing": [],
+	"/store": []
+}

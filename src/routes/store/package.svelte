@@ -1,7 +1,7 @@
 <script lang="ts">
     import type {AddonDescription} from "models/types";
-    import AddonIcon from "$lib/components/addon-icon.svelte";
-    import MenuIcon from "$lib/components/menu-icon.svelte";
+    import AddonIcon from "../../components/addon-icon.svelte";
+    import MenuIcon from "../../components/menu-icon.svelte";
     import Api from "models/api";
 
     let {children, addon}: { children?: any, addon: AddonDescription } = $props();

@@ -9,10 +9,6 @@ declare global {
         API: Api;
         APP: App;
     }
-
-    interface Event {
-        detail: Extension,
-    }
 }
 
 // 将类挂载到 window（需先判断环境）

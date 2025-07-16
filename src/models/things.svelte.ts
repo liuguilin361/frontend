@@ -1,9 +1,10 @@
 import Thing from "models/thing.svelte.js";
-import type {GroupDescription, ThingDescription} from "./types";
+import type {Capabilities, GroupDescription, ThingDescription} from "./types";
 import ReopeningWebSocket from "./reopening-web-socket";
 import api from "./api";
 import {SvelteMap} from "svelte/reactivity";
 import {browser} from "$app/environment";
+import {Light} from "models/light.svelte.ts";
 
 // Define message types for WebSocket
 enum MessageType {
@@ -19,7 +20,7 @@ enum MessageType {
 
 // Interface for WebSocket messages
 interface WebSocketMessage {
-    messageType: MessageType;
+    messageType: string;
     id: string;
     data?: any;
 }
@@ -30,8 +31,8 @@ export class Things {
     private ws: ReopeningWebSocket | null = null;
     private groupsWs: ReopeningWebSocket | null = null;
     private queue: Promise<void> = Promise.resolve();
-    private descriptions: Map<string, ThingDescription> = new Map();
-    private connectedThings = new Map<string, boolean>();
+    private thingDescriptions: Map<string, ThingDescription> = new Map();
+
 
     constructor() {
         if (browser) {
@@ -42,22 +43,23 @@ export class Things {
     /**
      * Handles incoming WebSocket messages.
      */
-    async onMessage(event: MessageEvent<string>): Promise<void> {
-        console.log("websocket message =", event.data);
+    onMessage(event: MessageEvent<string>) {
+
         try {
-            const message: WebSocketMessage = JSON.parse(event.data);
+            const message: WebSocketMessage = JSON.parse(JSON.parse(event.data));
             switch (message.messageType) {
                 case MessageType.Connected:
                     this.handleConnected(message.id, message.data);
                     break;
                 case MessageType.ThingAdded:
-                    await this.refreshThings();
+                    this.refreshThings().catch((e) => console.error(e));
                     break;
                 case MessageType.ThingModified:
-                    await this.refreshThing(message.id);
+                    this.refreshThing(message.id).catch((e) => console.error(e));
                     break;
                 case MessageType.PropertyStatus:
                     this.handlePropertyStatus(message.id, message.data);
+                    break;
                 case MessageType.GroupAdded:
                 case MessageType.GroupModified:
                 case MessageType.GroupRemoved:
@@ -93,14 +95,12 @@ export class Things {
      * Refreshes all things and groups from the API.
      */
     async refreshThings(): Promise<void> {
-        console.log("refreshThings");
+
         return this.addQueue(async () => {
             try {
                 // Fetch things
                 const things = await api.getThings<ThingDescription>();
-
                 const fetchedThingIds = new Set<string>();
-
                 for (const key in things) {
                     let description = things[key];
                     const thingId = description.id;
@@ -120,20 +120,28 @@ export class Things {
             console.error("无效的 ThingDescription：缺少 ID");
             return;
         }
-        const thing = new Thing(this, description);
-        this.things.set(description.id, thing);
-        this.descriptions.set(description.id, description);
+        let cap = description.selectedCapability as Capabilities;
+        switch (cap) {
+            case "Light":
+                let light = new Light(this, description);
+                this.things.set(description.id, light);
+                break;
+            default:
+                const thing = new Thing(this, description);
+                this.things.set(description.id, thing);
+        }
+        this.thingDescriptions.set(description.id, description);
     }
 
     /**
      * Removes a thing and cleans up its resources.
      */
-    handleRemove(thingId: string, skipEvent: boolean = false): void {
+    handleRemove(thingId: string, _skipEvent: boolean = false): void {
         const thing = this.things.get(thingId);
         if (thing) {
             this.things.delete(thingId);
         }
-        this.descriptions.delete(thingId);
+        this.thingDescriptions.delete(thingId);
     }
 
     /**
@@ -146,7 +154,7 @@ export class Things {
     /**
      * Removes a group.
      */
-    handleRemoveGroup(groupId: string, skipEvent: boolean = false): void {
+    handleRemoveGroup(groupId: string, _skipEvent: boolean = false): void {
         this.groups.delete(groupId);
     }
 
@@ -162,11 +170,22 @@ export class Things {
         return this.queue;
     }
 
+
     /**
      * Gets the things map (reactive).
      */
     public getThings(): Map<string, Thing> {
         return this.things;
+    }
+
+
+    getThing(thingId: string) {
+        if (this.thingDescriptions.has(thingId) && this.things.has(thingId)) {
+            return Promise.resolve(this.things.get(thingId));
+        }
+        return this.refreshThing(thingId).then(() => {
+            return this.things.get(thingId);
+        });
     }
 
     /**
@@ -177,10 +196,10 @@ export class Things {
     }
 
     /**
-     * Gets the descriptions map.
+     * Gets the thingDescriptions map.
      */
     public getDescriptions(): Map<string, ThingDescription> {
-        return this.descriptions;
+        return this.thingDescriptions;
     }
 
     public setProperty(
@@ -222,11 +241,10 @@ export class Things {
      * Initializes WebSocket connections for things and groups.
      */
     private connectWebSocket(): void {
-        // const origin = window.location.origin;
-        // const wsHref = `${origin}/things/ws`.replace(/^http/, 'ws');
-        const wsHref = `/api/things/ws`;
+        const origin = window.location.origin;
+        const wsHref = `${origin}/things/ws`.replace(/^http/, 'ws');
         // const groupsWsHref = `${origin}/groups/ws`.replace(/^http/, 'ws');
-        const groupsWsHref = `/api/groups/ws`;
+        // const groupsWsHref = `/api/groups/ws`;
 
         this.ws = new ReopeningWebSocket(wsHref);
         // this.groupsWs = new ReopeningWebSocket(groupsWsHref);

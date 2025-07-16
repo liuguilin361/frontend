@@ -1,6 +1,6 @@
 <!-- ColorPalette.svelte -->
 <script lang="ts">
-    import {hexToRgb, type HSL, type RGB, rgbToHsl} from "src/lib/components/property/utils/color-converters";
+    import {hexToRgb, type HSL, type RGB, rgbToHsl} from "../../components/property/utils/color-converters";
 
     // Define component event detail type (no alpha)
     interface ColorChangeEventDetail extends HSL { // Changed from HSLA to HSL

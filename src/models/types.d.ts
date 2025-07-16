@@ -1,3 +1,8 @@
+
+
+
+type JsonValue = any;
+
 export type  Capabilities =
     | 'Alarm'
     | 'AirQualitySensor'
@@ -56,6 +61,8 @@ export type Properties =
     | 'VideoProperty'
     | 'VoltageProperty';
 
+
+
 /**
  * Represents a Thing, following the provided Rust struct definition and Serde attributes.
  * Includes handling for renamed fields, optional fields, default values, and flattened extra properties.
@@ -77,6 +84,7 @@ export interface NewThing {
 // Interface for Thing and Group descriptions
 export interface ThingDescription {
     id: string;
+    name: string;
     title: string;
     '@context': string | string[];
     '@type'?: string | string[];
@@ -87,7 +95,6 @@ export interface ThingDescription {
     connected: boolean;
     properties: Record<string, PropertyDescription>,
     groupId?: string | null;
-
     [key: string]: any;
 }
 
@@ -224,7 +231,7 @@ export interface Form {
  */
 export interface Property {
     // #[serde(rename = "@type")]
-    '@type': string;
+    '@type': Properties;
     name: string;
     title: string;
     unit: string;
@@ -259,5 +266,10 @@ export interface Action {
     // #[serde(skip_serializing_if = "Option::is_none")]
     input?: JsonValue; // Optional due to Option and skip_serializing_if
     // #[serde(skip_serializing_if = "Option::is_none")] parameters? - Missing in Rust but common in actions? Added input based on Rust code.
+}
+
+export interface Thing{
+    id: string;
+    title: string;
 }
 

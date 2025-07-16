@@ -2,55 +2,22 @@
     import Form from "components/form/form.svelte";
     import Dialogbar from "components/dialogbar.svelte";
     import type {Schema, UiSchema} from "@sjsf/form";
+    import Api from "models/api.ts";
+    import type {ThingDescription} from "models/types";
+    import From from "./from.svelte"
 
-
-    let schema: Schema = {
-        "properties": {
-
-            "password": {
-                "description": "description app password",
-                "type": "string"
-            },
-            "username": {
-                "description": "description app username",
-                "type": "string"
-            },
-            "data": {
-                "description": "Number of things to add",
-                "type": "number"
-            },
-            "type": {
-                "description": "description enum type",
-                "type": "string",
-                "enum": [
-                    "string",
-                    "number",
-                    "boolean",
-                    "object",
-                    "array"
-                ],
-            },
-        },
-
-        "required": [
-            "data",
-            "username",
-            "password",
-            "type"
-        ],
-        "type": "object"
-    };
-
-    // const uiSchema: UiSchema = {
-    //     "ui:components": {
-    //         stringField: "stringField",
-    //     }
-    // }
+    let promise = Api.getNewThings<ThingDescription>();
 
 
 </script>
 
-<Dialogbar>New Things</Dialogbar>
+
+<Dialogbar></Dialogbar>
+{#await promise}
+{:then news}
+    {#each Object.entries(news) as [key, thing]}
+        <From {thing}></From>
+    {/each}
+{/await}
 
 
-<Form {schema}></Form>
