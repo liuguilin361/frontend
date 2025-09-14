@@ -1,11 +1,8 @@
-import {BaseStateIcons} from "data/icons.ts";
+import {BaseStateIcons} from "./icons.ts";
 import {mdiLightbulb, mdiLightbulbOff, mdiLightbulbOn} from "@mdi/js";
 
 
-export enum LightStatus {
-    On = "on",
-    Off = "off",
-}
+// type LightStatus = "on" | "off";
 
 
 class LightIcons extends BaseStateIcons {

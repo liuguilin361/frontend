@@ -1,84 +1,24 @@
-import {customElement, property, query} from "lit/decorators.js";
+import {customElement, property, query, state} from "lit/decorators.js";
 import {css, html, LitElement} from "lit";
 import {classMap} from "lit/directives/class-map.js";
 import {styleMap} from "lit/directives/style-map.js";
+import {ifDefined} from "lit/directives/if-defined.js";
 
-/**
- * Slider operation modes:
- * - "start": Fills from start to current value
- * - "end": Fills from end to current value
- * - "cursor": Shows a cursor at current value
- */
+
 type SliderMode = "start" | "end" | "cursor";
+
+const A11Y_KEY_CODES = new Set([
+    "ArrowRight",
+    "ArrowUp",
+    "ArrowLeft",
+    "ArrowDown",
+    "Home",
+    "End",
+]);
 
 @customElement("th-control-slider")
 export class ThControlSlider extends LitElement {
-    // Component Properties
-    @property({type: Boolean, reflect: true})
-    public disabled = false;
 
-    @property()
-    public mode?: SliderMode = "start";
-
-    @property({type: Boolean, reflect: true})
-    public vertical = false;
-
-    @property({type: Boolean, attribute: "inverted"})
-    public inverted = false;
-
-    @property({type: Boolean, attribute: "show-handle"})
-    public showHandle = true;
-
-    @property({type: Number,reflect: true})
-    public value: number = 50;
-
-    @property({type: Number,reflect: true})
-    public step = 1;
-
-    @property({type: Number,reflect: true})
-    public min = 0;
-
-    @property({type: Number,reflect: true})
-    public max = 100;
-
-    @query("#slider")
-    private slider!: HTMLElement;
-
-    valueToPercentage(value: number) {
-        const percentage =
-            (this.boundedValue(value) - this.min) / (this.max - this.min);
-        return this.inverted ? 1 - percentage : percentage;
-    }
-
-    percentageToValue(percentage: number) {
-        return (
-            (this.max - this.min) * (this.inverted ? 1 - percentage : percentage) +
-            this.min
-        );
-    }
-
-    steppedValue(value: number) {
-        return Math.round(value / this.step) * this.step;
-    }
-
-    boundedValue(value: number) {
-        return Math.min(Math.max(value, this.min), this.max);
-    }
-
-    // Private state variables
-    private _isDragging = false;
-    private _sliderRect!: DOMRect;
-    private _pointerId: number | null = null;
-
-    /**
-     * Component styles - organized in logical groups:
-     * 1. Host element styles
-     * 2. Container and slider track styles
-     * 3. Slider bar styles (for different modes)
-     * 4. Handle styles
-     * 5. Disabled state styles
-     * 6. Accessibility/focus styles
-     */
     static override styles = css`
         /* ==================== */
         /* 1. HOST ELEMENT STYLES */
@@ -87,9 +27,9 @@ export class ThControlSlider extends LitElement {
         :host {
             display: block;
             --control-slider-color: var(--primary-color);
-            --control-slider-thickness: 130px;
+            --control-slider-background: var(--disabled-color);
+            --control-slider-thickness: 40px;
             --control-slider-border-radius: 10px;
-            --control-slider-background: var(--disabled-color, gray);
             --control-slider-background-opacity: 0.2;
             outline: none;
             transition: box-shadow 180ms ease-in-out;
@@ -114,20 +54,22 @@ export class ThControlSlider extends LitElement {
             position: relative;
             height: 100%;
             width: 100%;
-            display: flex;
-
-            border-radius: var(--control-slider-border-radius);
-            overflow: hidden;
-            justify-content: center;
-            align-items: center;
-            --handle-margin: 0px;
         }
 
         .slider {
             position: relative;
             height: 100%;
             width: 100%;
+            border-radius: var(--control-slider-border-radius);
+            transition: box-shadow 180ms ease-in-out;
+            transform: translateZ(0);
+            outline: none;
+            overflow: hidden;
             cursor: pointer;
+        }
+
+        .slider:focus-visible {
+            box-shadow: 0 0 0 2px var(--control-slider-color);
         }
 
         .slider .slider-track-background {
@@ -156,6 +98,7 @@ export class ThControlSlider extends LitElement {
 
 
         .slider .slider-track-bar {
+            --border-radius: var(--control-slider-border-radius);
             --slider-size: 100%;
             height: 100%;
             width: 100%;
@@ -164,12 +107,6 @@ export class ThControlSlider extends LitElement {
             transition: transform 180ms ease-in-out,
             background-color 180ms ease-in-out;
 
-        }
-
-        /* 计算slider长度 */
-
-        .slider .slider-track-bar.show-handle {
-            --slider-size: calc(100% - 2 * var(--handle-margin));
         }
 
         .slider .slider-track-bar {
@@ -195,28 +132,80 @@ export class ThControlSlider extends LitElement {
             border-radius: 8px 8px 0 0;
         }
     `;
+    @property({type: Boolean, reflect: true})
+    public disabled = false;
+    @property()
+    public mode?: SliderMode = "start";
+    @property({type: Boolean, reflect: true})
+    public vertical = false;
+    @property({type: Boolean, attribute: "inverted"})
+    public inverted = false;
+    @property({type: Boolean, attribute: "show-handle"})
+    public showHandle = true;
+    @property({type: Number, reflect: true})
+    public value: number = 50;
+    @property({type: Number, reflect: true})
+    public step = 1;
+    @property({type: Number, reflect: true})
+    public min = 0;
+    @property({type: Number, reflect: true})
+    public max = 100;
+    // Private state variables
+    @state()
+    public pressed = false;
+    @property({type: String, reflect: true})
+    private label?: string;
+    @query("#slider")
+    private slider!: HTMLElement;
+    private _isDragging = false;
+    private _sliderRect!: DOMRect;
+    private _pointerId: number | null = null;
+
+
+    valueToPercentage(value: number) {
+        const percentage =
+            (this.boundedValue(value) - this.min) / (this.max - this.min);
+        return this.inverted ? 1 - percentage : percentage;
+    }
+
+    percentageToValue(percentage: number) {
+        return (
+            (this.max - this.min) * (this.inverted ? 1 - percentage : percentage) +
+            this.min
+        );
+    }
+
+    steppedValue(value: number) {
+        return Math.round(value / this.step) * this.step;
+    }
+
+    boundedValue(value: number) {
+        return Math.min(Math.max(value, this.min), this.max);
+    }
 
     /**
      * Render the slider component
      */
     override render() {
+        const valuenow = this.steppedValue(this.value ?? 0);
 
         return html`
             <div
                     style=${styleMap({
                         "--value": `${this.valueToPercentage(this.value ?? 0)}`,
                     })}
-                    class="container"
-                    @pointerdown=${this._onPointerDown}
-                    @keydown=${this._onKeyDown}
-                    role="slider"
-                    aria-valuenow=${this.value}
-                    aria-valuemin=${this.min}
-                    aria-valuemax=${this.max}
+                    aria-label=${ifDefined(this.label)}
+                    aria-valuenow=${valuenow.toString()}
+                    class="container ${classMap({pressed: this.pressed,})}"
                     aria-orientation=${this.vertical ? "vertical" : "horizontal"}
-                    tabindex=${this.disabled ? -1 : 0}
+
             >
-                <div id="slider" class="slider">
+                <p>${this.value}</p>
+                <div id="slider" class="slider"
+                     tabindex="0"
+                     role="slider"
+                     @keyup=${this._onKeyUp}
+                     @keydown=${this._onKeyDown}>
                     <div class="slider-track-background"></div>
                     <slot name="background"></slot>
                     ${this.mode === 'cursor' ?
@@ -348,42 +337,40 @@ export class ThControlSlider extends LitElement {
      * @param e Keyboard event
      */
     private _onKeyDown(e: KeyboardEvent) {
-        if (this.disabled) return;
-
-        let newValue = this.value;
-        const step = this.step || 1;
+        if (!A11Y_KEY_CODES.has(e.code) || this.disabled) return;
+        e.preventDefault();
+        console.log("key down", e.key);
         switch (e.key) {
             case 'ArrowRight':
             case 'ArrowUp':
-                newValue = this.value + step;
+                this.value = this.boundedValue((this.value ?? 0) + this.step);
                 break;
             case 'ArrowLeft':
             case 'ArrowDown':
-                newValue = this.value - step;
+                this.value = this.boundedValue((this.value ?? 0) - this.step);
                 break;
-            case 'Home':
-                newValue = this.min;
+            case "Home":
+                this.value = this.min;
                 break;
-            case 'End':
-                newValue = this.max;
-                break;
-            case 'PageUp':
-                newValue = this.value + step * 10;
-                break;
-            case 'PageDown':
-                newValue = this.value - step * 10;
+            case "End":
+                this.value = this.max;
                 break;
             default:
                 return;
         }
 
-        e.preventDefault();
-        newValue = Math.max(this.min, Math.min(this.max, newValue));
+    }
 
-        if (newValue !== this.value) {
-            this.value = newValue;
-            this._emitChangeEvent();
-        }
+    /**
+     * Handle keyboard events for accessibility
+     * @param e Keyboard event
+     */
+    private _onKeyUp(e: KeyboardEvent) {
+        if (!A11Y_KEY_CODES.has(e.code) || this.disabled) return;
+        e.preventDefault();
+        console.log("key up", e.key);
+        this._emitChangeEvent();
+
     }
 
     /**

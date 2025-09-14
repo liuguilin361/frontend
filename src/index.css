@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@plugin "daisyui";
+
+:root {
+    --wt-drawer-corner: 0.75rem;
+    --wt-drawer-z-index: 10;
+    --wt-drawer-width: 256px;
+    --wt-drawer-scrim-bg: rgba(0, 0, 0, 0.5);
+
+    --primary-text-color: #212121;
+
+    --sidebar-selected-icon-color: var(--primary-color);
+    --sidebar-text-color: var(--primary-text-color);
+
+    --primary-color: rgba(255, 162, 77, 0.9);
+    --disabled-color: rgba(188, 178, 168, 0.9);
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+
+    color-scheme: light dark;
+    color: rgba(255, 255, 255, 0.87);
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    margin: 0;
+    display: flex;
+    place-items: center;
+    min-width: 320px;
+    min-height: 100vh;
+}
+

@@ -1,27 +1,10 @@
-import tailwindcss from "@tailwindcss/vite";
-import {sveltekit} from "@sveltejs/kit/vite";
-import {defineConfig} from "vite";
-
+import {defineConfig} from 'vite'
+import tailwindcss from '@tailwindcss/vite'
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
-    plugins: [
-        tailwindcss(),
-        sveltekit()
-    ],
-    resolve: {
-        alias: {
-            'components': '/src/lib/components',
-            'components/*': 'src/lib/components/*',
-            'utils': '/src/utils',
-            'assets': '/src/assets',
-            'models': 'src/models',
-            'models/*': 'src/models/*',
-            'thing': 'src/lib/thing',
-            'thing/*': 'src/lib/thing/*',
-            'data': 'src/data',
-            'data/*': 'src/data/*'
-        },
-    },
+
+    plugins: [tailwindcss(), tsconfigPaths()],
     server: {
         open: true,
         proxy: {

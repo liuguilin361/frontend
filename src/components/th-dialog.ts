@@ -1,18 +1,27 @@
-import {css, type CSSResultGroup} from "lit";
-import {customElement} from "lit/decorators.js";
-
-import "@material/web/dialog/dialog.js";
-import {MdDialog} from "@material/web/dialog/dialog"; // 确保 MdDialog 组件被注册
+import {css, html, LitElement} from "lit";
+import {customElement, property, query} from "lit/decorators.js";
+import '@awesome.me/webawesome/dist/components/dialog/dialog.js';
 
 @customElement('th-dialog')
-class ThDialog extends MdDialog { // 继承 LitElement，而不是 MdDialog
+class ThDialog extends LitElement {
 
-    styles(): CSSResultGroup {
-        return [
-            css``
-        ]
+    static styles = css``
+    @property({type: Boolean, reflect: true}) open: boolean = false;
+    @property({type: String, reflect: true}) label?: string;
+
+    @query('#dialog')
+    dialog?: HTMLDialogElement;
+
+    render() {
+        return html`
+            <wa-dialog label=${this.label} ?open=${this.open}>
+                <slot name="label"></slot>
+                <slot name="header-actions"></slot>
+                <slot name="footer"></slot>
+                <slot></slot>
+            </wa-dialog>
+        `
     }
-
 }
 
 declare global {

@@ -25,6 +25,7 @@ import {
     mdiImage,
     mdiImageFilterFrames,
     mdiLightbulb,
+    mdiLoading,
     mdiMapMarkerRadius,
     mdiMicrophoneMessage,
     mdiPalette,
@@ -40,7 +41,7 @@ import {
     mdiTimerOutline,
     mdiToggleSwitch,
     mdiWeatherPartlyCloudy,
-    mdiWhiteBalanceSunny, mdiLoading,
+    mdiWhiteBalanceSunny,
 } from "@mdi/js";
 
 
@@ -106,9 +107,9 @@ export interface StateIcons {
 }
 
 export abstract class BaseStateIcons implements StateIcons {
+    public readonly default: string;
     private readonly predefined: Record<BasicState, string>; // 改为完整 Record
     private readonly data: Record<string, string>;
-    public readonly default: string;
 
     protected constructor(
         data: Record<string, string>,
@@ -143,13 +144,12 @@ export abstract class BaseStateIcons implements StateIcons {
         return this.default;
     }
 
+    protected getDynamicIcon(_state: string): string | undefined {
+        return undefined;
+    }
 
     private isBasicState(state: string): state is BasicState {
         return state in this.predefined;
-    }
-
-    protected getDynamicIcon(_state: string): string | undefined {
-        return undefined;
     }
 }
 

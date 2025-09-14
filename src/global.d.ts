@@ -1,6 +1,6 @@
-import {Api} from "models/api"
-import {Extension} from "./views/extension"
-import {App} from "./views/app.svelte"
+import {Api} from "./models/api.ts"
+import {Extension} from "./state/extension.ts"
+import {App} from "./state/app.ts"
 
 
 declare global {

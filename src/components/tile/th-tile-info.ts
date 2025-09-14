@@ -1,11 +1,8 @@
-import {css, type TemplateResult} from "lit";
-import {html, LitElement, nothing} from "lit";
+import {css, html, LitElement, nothing, type TemplateResult} from "lit";
 import {customElement, property} from "lit/decorators.js";
 
 @customElement("th-tile-info")
 export class ThTileInfo extends LitElement {
-    @property({type: String, reflect: true}) public primary?: string;
-    @property({type: String, reflect: true}) public secondary?: string | TemplateResult<1>;
     static override styles = css`
         :host {
             --font-size-primary: 14px;
@@ -15,43 +12,38 @@ export class ThTileInfo extends LitElement {
         }
 
         .info {
-            width: 100%;
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
-            justify-content: center;
-            gap: 4px;
+            user-select: none;
         }
 
-        span {
-            text-overflow: ellipsis;
-            overflow: hidden;
-            white-space: nowrap;
-            width: 100%;
+        .text-primary {
+            font-size: 16px; /* 较大字号 */
+            font-weight: 600; /* 中等加粗 */
+            color: #333333; /* 深灰色 - 高对比度 */
+            line-height: 1.6; /* 舒适行高 */
+            letter-spacing: 0.5px; /* 轻微字间距提升可读性 */
+            font-family: "Helvetica Neue", Arial, sans-serif; /* 现代字体栈 */
         }
 
-        .primary {
-            font-size: var(--font-size-primary);
-            font-weight: var(--text-sm);
-            line-height: var(--text-sm);
-            color: var(--text-color-primary);
-        }
-
-        .secondary {
-            font-size: var(--font-size-secondary);
-            font-weight: var(--text-xs);
-            line-height: var(--text-xs);
-            color: var(--text-color-secondary);
+        .text-secondary {
+            font-size: 12px; /* 较小字号 */
+            font-weight: 400; /* 正常字重 */
+            color: #666666; /* 中灰色 - 较低对比度 */
+            line-height: 1.5; /* 紧凑行高 */
+            opacity: 0.9; /* 轻微透明效果 */
+            font-family: inherit; /* 继承主字体 */
         }
     `;
-
+    @property({type: String, reflect: true}) public primary?: string;
+    @property({type: String, reflect: true}) public secondary?: string | TemplateResult<1>;
 
     protected override render() {
         return html`
             <div class="info">
-                <span class="primary">${this.primary}</span>
+                <span class="text-primary">${this.primary}</span>
                 ${this.secondary
-                        ? html`<span class="secondary">${this.secondary}</span>`
+                        ? html`<span class="text-secondary">${this.secondary}</span>`
                         : nothing}
             </div>
         `;
